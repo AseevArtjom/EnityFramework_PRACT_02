@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,11 +17,12 @@ namespace EntityFramework_PRACT_02
                 var Games = db.Game.ToList();
                 var Developers = db.Developers.ToList();
                 var Styles = db.Styles.ToList();
-                
+                var Sales = db.Sales.ToList();
 
                 var query = from Game in Games
                             join Developer in Developers on Game.DeveloperId equals Developer.Id
                             join Style in Styles on Game.StyleId equals Style.Id
+                            join Sale in Sales on Game.Id equals Sale.GameId
                             select new
                             {
                                 DeveloperName = Developer.Name,
@@ -33,7 +35,11 @@ namespace EntityFramework_PRACT_02
                 {
 
                     Console.Clear();
-                    Console.WriteLine("Esc - quit\nnum1 - search game by name\nnum2 - search game by developer\nnum3 - search game by name and developer\nnum4 - search game by style\nnum5 - search game by release\nnum6 - Top3 developer with max count games\nnum7 - add new game\nnum8 - delete game");
+                    Console.WriteLine("Esc - quit\nnum1 - search game by name\nnum2 - search game by developer\nnum3 - search game by name and developer\n" +
+                        "num4 - search game by style\nnum5 - search game by release\nnum6 - add new game\nnum7 - delete game\n" +
+                        "num8 - Top3 developer with max count games\nnum9 - Top1 developer with max count games\nF1 - Top3 games styles\nF2 - Top1 games styles" +
+                        "\nF3 - Top3 styles by sales\nF4 - Top1 style by sales\nF5 - Top3 single games by sales\nF6 - Top3 multiplayer games by sales\nF7 - Top1 single game by sales" +
+                        "\nF8 - Top1 multiplayer game by sales\nF9 - Top1 Game by sales");
                     key = Console.ReadKey();
                     if (key.Key == ConsoleKey.NumPad1)
                     {
@@ -188,30 +194,6 @@ namespace EntityFramework_PRACT_02
                     else if(key.Key == ConsoleKey.NumPad6)
                     {
                         Console.Clear();
-                        var topDevelopers = Games
-                        .GroupBy(game => game.DeveloperId)
-                        .Select(group => new
-                        {
-                            DeveloperId = group.Key,
-                            GameCount = group.Count()
-                        })
-                        .OrderByDescending(result => result.GameCount)
-                        .Take(3)
-                        .ToList();
-
-                        foreach (var topDeveloper in topDevelopers)
-                        {
-                            var developer = Developers.FirstOrDefault(dev => dev.Id == topDeveloper.DeveloperId);
-                            if (developer != null)
-                            {
-                                Console.WriteLine($"{developer.Name} - {topDeveloper.GameCount} games");
-                            }
-                        }
-                        Console.ReadKey();
-                    }
-                    else if(key.Key == ConsoleKey.NumPad7)
-                    {
-                        Console.Clear();
                         Console.WriteLine("Enter name of game : ");
                         string NameGame = Console.ReadLine();
 
@@ -270,7 +252,7 @@ namespace EntityFramework_PRACT_02
                         Games.Add(newgame);
                         db.SaveChanges();
                     }
-                    else if(key.Key == ConsoleKey.NumPad8)
+                    else if(key.Key == ConsoleKey.NumPad7)
                     {
                         Console.Clear();
                         Console.WriteLine("Choose game to delete(id) : ");
@@ -292,9 +274,259 @@ namespace EntityFramework_PRACT_02
                             Console.WriteLine("Failed to delete game");
                         }
                     }
+                    else if (key.Key == ConsoleKey.NumPad8)
+                    {
+                        Console.Clear();
+                        var topDevelopers = Games
+                        .GroupBy(game => game.DeveloperId)
+                        .Select(group => new
+                        {
+                            DeveloperId = group.Key,
+                            GameCount = group.Count()
+                        })
+                        .OrderByDescending(result => result.GameCount)
+                        .Take(3)
+                        .ToList();
+
+                        foreach (var topDeveloper in topDevelopers)
+                        {
+                            var developer = Developers.FirstOrDefault(dev => dev.Id == topDeveloper.DeveloperId);
+                            if (developer != null)
+                            {
+                                Console.WriteLine($"{developer.Name} - {topDeveloper.GameCount} games");
+                            }
+                        }
+                        Console.ReadKey();
+                    }
+                    else if (key.Key == ConsoleKey.NumPad9)
+                    {
+                        Console.Clear();
+                        var topDevelopers = Games
+                        .GroupBy(game => game.DeveloperId)
+                        .Select(group => new
+                        {
+                            DeveloperId = group.Key,
+                            GameCount = group.Count()
+                        })
+                        .OrderByDescending(result => result.GameCount)
+                        .Take(1)
+                        .ToList();
+
+                        foreach (var topDeveloper in topDevelopers)
+                        {
+                            var developer = Developers.FirstOrDefault(dev => dev.Id == topDeveloper.DeveloperId);
+                            if (developer != null)
+                            {
+                                Console.WriteLine($"{developer.Name} - {topDeveloper.GameCount} games");
+                            }
+                        }
+                        Console.ReadKey();
+                    }
+                    else if(key.Key == ConsoleKey.F1)
+                    {
+                        Console.Clear();
+                        var topStyles = Games
+                        .GroupBy(game => game.StyleId)
+                        .Select(group => new
+                        {
+                            StyleId = group.Key,
+                            GameCount = group.Count()
+                        })
+                        .OrderByDescending(result => result.GameCount)
+                        .Take(3)
+                        .ToList();
+
+                        foreach (var item in topStyles)
+                        {
+                            var Style = Styles.FirstOrDefault(s => s.Id == item.StyleId);
+                            if (Style != null)
+                            {
+                                var gamesCount = Games.Count(game => game.StyleId == item.StyleId);
+                                Console.WriteLine($"{Style.StyleName} - {gamesCount}");
+                            }
+                        }
+                        Console.ReadKey();
+                    }
+                    else if(key.Key == ConsoleKey.F2)
+                    {
+                        Console.Clear();
+                        var topStyles = Games
+                        .GroupBy(game => game.StyleId)
+                        .Select(group => new
+                        {
+                            StyleId = group.Key,
+                            GameCount = group.Count()
+                        })
+                        .OrderByDescending(result => result.GameCount)
+                        .Take(1)
+                        .ToList();
+
+                        foreach (var item in topStyles)
+                        {
+                            var Style = Styles.FirstOrDefault(s => s.Id == item.StyleId);
+                            if (Style != null)
+                            {
+                                var gamesCount = Games.Count(game => game.StyleId == item.StyleId);
+                                Console.WriteLine($"{Style.StyleName} - {gamesCount}");
+                            }
+                        }
+                        Console.ReadKey();
+                    }
+                    else if(key.Key == ConsoleKey.F3)
+                    {
+                        Console.Clear();
+
+                        var TopStylesBySales = Sales
+                            .Join(Games, sale => sale.GameId, game => game.Id, (sale, game) => new { sale, game })
+                            .Join(Styles, sg => sg.game.StyleId, style => style.Id, (sg, style) => new { sg, style })
+                            .GroupBy(s => s.style.StyleName)
+                            .Select(g => new
+                            {
+                                StyleName = g.Key,
+                                TotalSales = g.Sum(s => s.sg.sale.Count)
+                            })
+                            .OrderByDescending(s => s.TotalSales)
+                            .Take(3);
+
+                        foreach (var item in TopStylesBySales)
+                        {
+                            Console.WriteLine($"{item.StyleName} - {item.TotalSales}");
+                        }
+                        Console.ReadKey();
+                    }
+                    else if (key.Key == ConsoleKey.F4)
+                    {
+                        Console.Clear();
+
+                        var TopStylesBySales = Sales
+                            .Join(Games, sale => sale.GameId, game => game.Id, (sale, game) => new { sale, game })
+                            .Join(Styles, sg => sg.game.StyleId, style => style.Id, (sg, style) => new { sg, style })
+                            .GroupBy(s => s.style.StyleName)
+                            .Select(g => new
+                            {
+                                StyleName = g.Key,
+                                TotalSales = g.Sum(s => s.sg.sale.Count)
+                            })
+                            .OrderByDescending(s => s.TotalSales)
+                            .Take(1);
+
+                        foreach (var item in TopStylesBySales)
+                        {
+                            Console.WriteLine($"{item.StyleName} - {item.TotalSales}");
+                        }
+                        Console.ReadKey();
+                    }
+                    else if(key.Key == ConsoleKey.F5)
+                    {
+                        Console.Clear();
+
+                        var TopSingleGamesBySales = Sales
+                            .Join(Games, sale => sale.GameId, game => game.Id, (sale, game) => new { sale, game })
+                            .Where(sg => sg.game.StyleId == 1)
+                            .GroupBy(sg => sg.game.Name)
+                            .Select(g => new
+                            {
+                                GameName = g.Key,
+                                TotalSales = g.Sum(s => s.sale.Count)
+                            })
+                            .OrderByDescending(s => s.TotalSales)
+                            .Take(3);
+
+                        foreach (var item in TopSingleGamesBySales)
+                        {
+                            Console.WriteLine($"{item.GameName} - {item.TotalSales}");
+                        }
+                        Console.ReadKey();
+                    }
+                    else if (key.Key == ConsoleKey.F6)
+                    {
+                        Console.Clear();
+
+                        var TopSingleGamesBySales = Sales
+                            .Join(Games, sale => sale.GameId, game => game.Id, (sale, game) => new { sale, game })
+                            .Where(sg => sg.game.StyleId == 2)
+                            .GroupBy(sg => sg.game.Name)
+                            .Select(g => new
+                            {
+                                GameName = g.Key,
+                                TotalSales = g.Sum(s => s.sale.Count)
+                            })
+                            .OrderByDescending(s => s.TotalSales)
+                            .Take(3);
+
+                        foreach (var item in TopSingleGamesBySales)
+                        {
+                            Console.WriteLine($"{item.GameName} - {item.TotalSales}");
+                        }
+                        Console.ReadKey();
+                    }
+                    else if (key.Key == ConsoleKey.F7)
+                    {
+                        Console.Clear();
+
+                        var TopSingleGamesBySales = Sales
+                            .Join(Games, sale => sale.GameId, game => game.Id, (sale, game) => new { sale, game })
+                            .Where(sg => sg.game.StyleId == 1)
+                            .GroupBy(sg => sg.game.Name)
+                            .Select(g => new
+                            {
+                                GameName = g.Key,
+                                TotalSales = g.Sum(s => s.sale.Count)
+                            })
+                            .OrderByDescending(s => s.TotalSales)
+                            .Take(1);
+
+                        foreach (var item in TopSingleGamesBySales)
+                        {
+                            Console.WriteLine($"{item.GameName} - {item.TotalSales}");
+                        }
+                        Console.ReadKey();
+                    }
+                    else if (key.Key == ConsoleKey.F8)
+                    {
+                        Console.Clear();
+
+                        var TopSingleGamesBySales = Sales
+                            .Join(Games, sale => sale.GameId, game => game.Id, (sale, game) => new { sale, game })
+                            .Where(sg => sg.game.StyleId == 2)
+                            .GroupBy(sg => sg.game.Name)
+                            .Select(g => new
+                            {
+                                GameName = g.Key,
+                                TotalSales = g.Sum(s => s.sale.Count)
+                            })
+                            .OrderByDescending(s => s.TotalSales)
+                            .Take(1);
+
+                        foreach (var item in TopSingleGamesBySales)
+                        {
+                            Console.WriteLine($"{item.GameName} - {item.TotalSales}");
+                        }
+                        Console.ReadKey();
+                    }
+                    else if (key.Key == ConsoleKey.F9)
+                    {
+                        Console.Clear();
+
+                        var TopGameBySales = Sales
+                            .Join(Games, sale => sale.GameId, game => game.Id, (sale, game) => new { sale, game })
+                            .GroupBy(sg => sg.game.Name)
+                            .Select(g => new
+                            {
+                                GameName = g.Key,
+                                TotalSales = g.Sum(s => s.sale.Count)
+                            })
+                            .OrderByDescending(s => s.TotalSales)
+                            .Take(1);
+
+                        foreach (var item in TopGameBySales)
+                        {
+                            Console.WriteLine($"{item.GameName} - {item.TotalSales}");
+                        }
+                        Console.ReadKey();
+                    }
                 } while (key.Key != ConsoleKey.Escape);
             }
-            
         }
         static public void AddNewDeveloperToBD(string NewDeveloper)
         {

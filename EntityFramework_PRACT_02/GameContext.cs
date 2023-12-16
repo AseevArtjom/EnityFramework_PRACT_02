@@ -14,6 +14,7 @@ namespace EntityFramework_PRACT_02
         public DbSet<Game> Game { get; set; }
         public DbSet<Developer> Developers { get; set; }
         public DbSet<Style> Styles { get; set; }
+        public DbSet<Sale> Sales { get; set; }
 
         public GameContext()
         {
